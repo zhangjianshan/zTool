@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * 流工具
  * @author zhangjianshan on 2021-07-27
  * @since 1.8
  */
