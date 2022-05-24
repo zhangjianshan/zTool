@@ -1,11 +1,10 @@
-package com.ztool;
+package com.ztool.stream;
 
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -13,15 +12,14 @@ import java.util.stream.Stream;
 
 /**
  * 流工具
+ *
  * @author zhangjianshan on 2021-07-27
  * @since 1.8
  */
 @SuppressWarnings("unchecked")
 public class StreamTool {
 
-    public static final String SPLIT = ",";
-
-    public static final char DEFAULT_SPLIT = ',';
+    public static final String DEFAULT_SPLIT = ",";
 
 
     /**
@@ -31,7 +29,8 @@ public class StreamTool {
      * @param separator 分隔符字符
      * @return 切分后的数组
      */
-    public static <R> List<R> splitToList(CharSequence str, char separator, Function<? super String, ? extends R> keyMapper) {
+    public static <R> List<R> splitToList(String str, String separator, Function<? super String, ? extends R> keyMapper) {
+
         return Arrays.stream(StrUtil.splitToArray(str, separator)).map(keyMapper).collect(Collectors.toList());
     }
 
@@ -41,7 +40,7 @@ public class StreamTool {
      * @param str 被切分的字符串（默认分隔符字符,）
      * @return 切分后的数组
      */
-    public static <R> List<R> splitToList(CharSequence str, Function<? super String, ? extends R> keyMapper) {
+    public static <R> List<R> splitToList(String str, Function<? super String, ? extends R> keyMapper) {
         return splitToList(str, DEFAULT_SPLIT, keyMapper);
     }
 
@@ -52,15 +51,15 @@ public class StreamTool {
      * @param separator 分隔符字符
      * @return 切分后的数组
      */
-    public static Stream<String> splitToStream(CharSequence str, char separator) {
+    public static Stream<String> splitToStream(String str, char separator) {
         return Arrays.stream(StrUtil.splitToArray(str, separator));
     }
 
-    public static List<Integer> splitToIntList(CharSequence str) {
+    public static List<Integer> splitToIntList(String str) {
         return splitToIntList(str, DEFAULT_SPLIT);
     }
 
-    public static List<Integer> splitToIntList(CharSequence str, char separator) {
+    public static List<Integer> splitToIntList(String str, String separator) {
         return splitToList(str, separator, Integer::new);
     }
 
@@ -86,7 +85,7 @@ public class StreamTool {
     public static <T, K> Map<String, List<T>> groupingByMoreKey(List<T> dataList, Function<? super T, ? extends K>... keyFun) {
         Map<String, List<T>> dataMap = new HashMap<>();
         for (T t : dataList) {
-            StringJoiner keyJoiner = new StringJoiner(SPLIT);
+            StringJoiner keyJoiner = new StringJoiner(DEFAULT_SPLIT);
             for (Function<? super T, ? extends K> function : keyFun) {
                 K apply = function.apply(t);
                 keyJoiner.add(apply + "");
@@ -99,15 +98,49 @@ public class StreamTool {
         return dataMap;
     }
 
+    /**
+     * 获取集合中某个字段的集合（去重）
+     *
+     * @param dataList  数据集合
+     * @param keyMapper 字段
+     * @return 字段集合
+     */
     public static <K, T> List<K> toDistinctList(List<T> dataList, Function<? super T, ? extends K> keyMapper) {
         return toList(dataList, keyMapper).stream().distinct().collect(Collectors.toList());
     }
 
+    /**
+     * 集合转换成string
+     *
+     * @param dataList    数据集合
+     * @param keyMapper   字段
+     * @param conjunction 切割福
+     * @return string
+     */
     public static <K, T> String join(List<T> dataList, Function<? super T, ? extends K> keyMapper, CharSequence conjunction) {
         return CollectionUtil.join(toList(dataList, keyMapper).stream().distinct().collect(Collectors.toList()), conjunction);
     }
 
 
+    /**
+     * 根据某个字段生成一对一map
+     *
+     * @param dataList  数据集合
+     * @param keyMapper 字段
+     * @return Map<key, data>
+     */
+    public static <K, T> Map<K, T> toMap(List<T> dataList, Function<? super T, ? extends K> keyMapper) {
+
+        return dataList.stream().filter(Objects::nonNull).collect(toMap(keyMapper));
+    }
+
+    /**
+     * 获取集合中某个字段的集合
+     *
+     * @param dataList  数据集合
+     * @param keyMapper 字段
+     * @return 字段集合
+     */
     public static <K, T> List<K> toList(List<T> dataList, Function<? super T, ? extends K> keyMapper) {
         return dataList.stream().filter(Objects::nonNull).map(keyMapper).collect(Collectors.toList());
     }
@@ -175,11 +208,6 @@ public class StreamTool {
         return dataMap;
     }
 
-
-    public static <K, T> Map<K, T> toMap(List<T> dataList, Function<? super T, ? extends K> keyMapper) {
-
-        return dataList.stream().filter(Objects::nonNull).collect(toMap(keyMapper));
-    }
 
     public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyMapper) {
         Function<? super T, ? extends U> valueMapper = t -> (U) t;

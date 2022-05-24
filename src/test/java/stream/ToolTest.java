@@ -1,9 +1,14 @@
-# zTool
-```text
-简化流操作代码量：StreamTool
-```
-```java
-public static void main(String[] args) {
+package stream;
+
+import cn.hutool.core.collection.CollectionUtil;
+import com.ztool.demo.PersonVO;
+import com.ztool.stream.StreamTool;
+
+import java.util.List;
+import java.util.Map;
+
+public class ToolTest {
+    public static void main(String[] args) {
         List<PersonVO> personVOS = CollectionUtil.newArrayList(
                 new PersonVO("张三", 1),
                 new PersonVO("张四", 11),
@@ -24,4 +29,4 @@ public static void main(String[] args) {
         Map<Integer, PersonVO> personByAgeMap = StreamTool.toMap(personVOS, PersonVO::getAge);
         System.out.println(personByAgeMap);
     }
-```
+}
