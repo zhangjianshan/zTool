@@ -1,6 +1,6 @@
 # zTool
 ```text
-简化流操作代码量：StreamTool
+流处理工具类简化代码量：StreamTool
 ```
 ```java
 public static void main(String[] args) {
