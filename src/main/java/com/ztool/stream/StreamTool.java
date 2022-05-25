@@ -145,6 +145,27 @@ public class StreamTool {
         return dataList.stream().filter(Objects::nonNull).map(keyMapper).collect(Collectors.toList());
     }
 
+    /**
+     * 过滤
+     *
+     * @param dataList  数据
+     * @param predicate 过滤条件
+     * @return 过滤后数据集合
+     */
+    public static <T> List<T> filter(List<T> dataList, Predicate<? super T> predicate) {
+        return dataList.stream().filter(Objects::nonNull).filter(predicate).collect(Collectors.toList());
+    }
+
+    /**
+     * 更改集合中的数据
+     *
+     * @param dataList 数据集合
+     * @param action   更改函数
+     */
+    public static <T> List<T> peek(List<T> dataList, Consumer<? super T> action) {
+        return dataList.stream().filter(Objects::nonNull).peek(action).collect(Collectors.toList());
+    }
+
     public static <T, U extends Comparable<? super U>> List<T> distinct(List<T> dataList, Function<? super T, ? extends U> keyExtractor) {
         return dataList.stream().filter(Objects::nonNull).collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(keyExtractor))), ArrayList::new));
     }
