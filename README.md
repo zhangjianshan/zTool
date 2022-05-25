@@ -15,7 +15,6 @@ public static void main(String[] args) {
         //取某个属性
         List<String> nameList = StreamTool.toList(personVOS, PersonVO::getName);
         System.out.println(nameList);
-        //rt.jar底层如果key相同会报错，修改了逻辑，用此方法不会报错
         //方法1：Exception in thread "main" java.lang.IllegalStateException: Duplicate key PersonVO(name=张七, age=15)
         //Map<Integer, PersonVO> personByAgeMap = personVOS.stream().collect(Collectors.toMap(PersonVO::getAge, Function.identity()));
         //方法2：不会报错
