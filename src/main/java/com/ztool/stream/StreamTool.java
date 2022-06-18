@@ -145,6 +145,19 @@ public class StreamTool {
         return dataList.stream().filter(Objects::nonNull).map(keyMapper).collect(Collectors.toList());
     }
 
+       /**
+     * 获取集合中某个字段的集合可转换成其他类型
+     *
+     * @param dataList  数据集合
+     * @param keyMapper 字段
+     * @param exchangeMapper 转换字段     
+     * @return 字段集合
+     */
+    public static <K, T,R> List<K> toList(List<T> dataList, Function<? super T, ? extends K> keyMapper,Function<? super K, ? extends R> exchangeMapper) {
+        return dataList.stream().filter(Objects::nonNull).map(keyMapper).filter(Objects::nonNull).map(exchangeMapper).collect(Collectors.toList());
+    }
+    
+    
     /**
      * 过滤
      *
