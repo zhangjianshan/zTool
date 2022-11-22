@@ -8,9 +8,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PersonVO {
-    //姓名
+    /**
+     * 姓名
+     */
     private String name;
 
-    //年龄
+    /**
+     * 年龄
+     */
     private Integer age;
 }
