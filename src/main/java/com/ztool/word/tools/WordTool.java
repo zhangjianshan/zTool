@@ -1,4 +1,4 @@
-package com.ztool.word;
+package com.ztool.word.tools;
 
 
 import cn.hutool.core.io.FileUtil;

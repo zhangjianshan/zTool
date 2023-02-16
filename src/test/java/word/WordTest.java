@@ -1,6 +1,6 @@
 package word;
 
-import com.ztool.word.WordTool;
+import com.ztool.word.tools.WordTool;
 import org.apache.poi.xwpf.usermodel.*;
 
 /**
