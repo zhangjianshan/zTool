@@ -13,33 +13,33 @@ public class WordTest {
         WordTool.addCustomHeadingStyle(document, WordTool.TITLE_SECOND, 2);
         WordTool.addCustomHeadingStyle(document, WordTool.TITLE_THIRD, 3);
         WordTool.addCustomHeadingStyle(document, WordTool.TITLE_FOURTH, 4);
-        //´´½¨±êÌâ
+        //åˆ›å»ºæ ‡é¢˜
         XWPFParagraph paragraph = document.createParagraph();
         paragraph.setPageBreak(true);
-        paragraph.setStyle("Ò»¡¢¼¶±êÌâ");
+        paragraph.setStyle("ä¸€ã€çº§æ ‡é¢˜");
         XWPFRun run = paragraph.createRun();
-        run.setFontFamily("ºÚÌå");
+        run.setFontFamily("é»‘ä½“");
         run.setFontSize(22);
-        run.setText("Ò»¼¶±êÌâ");
+        run.setText("ä¸€çº§æ ‡é¢˜");
 
         XWPFParagraph campParagraph = document.createParagraph();
         campParagraph.setFirstLineIndent(600);
-        campParagraph.setStyle("¶ş¡¢¼¶±êÌâ");
+        campParagraph.setStyle("äºŒã€çº§æ ‡é¢˜");
         XWPFRun campRun = campParagraph.createRun();
-        campRun.setFontFamily("ºÚÌå");
-        campRun.setText("¶ş¼¶±êÌâ");
+        campRun.setFontFamily("é»‘ä½“");
+        campRun.setText("äºŒçº§æ ‡é¢˜");
         campRun.setFontSize(14);
 
         WordTool.createText(document, "\t\t223", ParagraphAlignment.LEFT);
         WordTool.createText(document, "224");
-        //´´½¨±í¸ñ
+        //åˆ›å»ºè¡¨æ ¼
         XWPFTable table = WordTool.createTable(document, 10, 2);
         int row = 0;
-        //Ìî³ä±êÌâ
+        //å¡«å……æ ‡é¢˜
         XWPFTableRow firstRow = table.getRow(row);
-        firstRow.getCell(0).setText("×¨Ìâ±¨¸æÃû³Æ");
+        firstRow.getCell(0).setText("ä¸“é¢˜æŠ¥å‘Šåç§°");
         firstRow.getCell(1).setText("13");
-        //²åÈëÍ¼Æ¬
+        //æ’å…¥å›¾ç‰‡
         WordTool.createPicture(document, "D://123.png");
         WordTool.write(document, "D://123.docx");
     }
