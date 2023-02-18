@@ -4,13 +4,21 @@ package com.ztool.word.tools;
 import cn.hutool.core.io.FileUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.Units;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 
 /**
@@ -205,5 +213,77 @@ public class WordTool {
         return String.valueOf(obj);
     }
 
+    /**
+     * 判断文本中时候包含$
+     *
+     * @param text 文本
+     * @return 包含返回true, 不包含返回false
+     */
+    public static boolean checkText(String text) {
+        boolean check = false;
+        if (text.indexOf("$") != -1) {
+            check = true;
+        }
+        return check;
+    }
 
+    /**
+     * 匹配传入信息集合与模板
+     *
+     * @param value   模板需要替换的区域
+     * @param textMap 传入信息集合
+     * @return 模板需要替换区域信息集合对应值
+     */
+    public static String changeValue(String value, Map<String, String> textMap) {
+        Set<Map.Entry<String, String>> textSets = textMap.entrySet();
+        for (Map.Entry<String, String> textSet : textSets) {
+            //匹配模板与替换值 格式${key}
+            String key = "${" + textSet.getKey() + "}";
+            if (value.indexOf(key) != -1) {
+                value = textSet.getValue();
+            }
+        }
+        //模板未匹配到区域替换为空
+        if (checkText(value)) {
+            value = "";
+        }
+        return value;
+    }
+
+    /**
+     * 遍历表格,并替换模板
+     *
+     * @param rows    表格行对象
+     * @param textMap 需要替换的信息集合
+     */
+    public static void eachTable(List<XWPFTableRow> rows, Map<String, String> textMap) {
+        for (XWPFTableRow row : rows) {
+            List<XWPFTableCell> cells = row.getTableCells();
+            for (XWPFTableCell cell : cells) {
+                //判断单元格是否需要替换
+                if (checkText(cell.getText())) {
+                    List<XWPFParagraph> paragraphs = cell.getParagraphs();
+                    for (XWPFParagraph paragraph : paragraphs) {
+                        List<XWPFRun> runs = paragraph.getRuns();
+                        for (XWPFRun run : runs) {
+                            run.setText(changeValue(run.toString(), textMap), 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    static CellReference setTitleInDataSheet(XWPFChart chart, String title, int column) throws Exception {
+        XSSFWorkbook workbook = chart.getWorkbook();
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        XSSFRow row = sheet.getRow(0);
+        if (row == null)
+            row = sheet.createRow(0);
+        XSSFCell cell = row.getCell(column);
+        if (cell == null)
+            cell = row.createCell(column);
+        cell.setCellValue(title);
+        return new CellReference(sheet.getSheetName(), 0, column, true, true);
+    }
 }
