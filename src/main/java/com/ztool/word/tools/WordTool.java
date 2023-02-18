@@ -213,6 +213,55 @@ public class WordTool {
         return String.valueOf(obj);
     }
 
+
+    /**
+     * 添加word中的标记数据 标记方式为 ${text}
+     *
+     * @param document word对象
+     * @param textMap  需要替换的信息集合
+     */
+    public void changeParagraphText(XWPFDocument document, Map<String, String> textMap) {
+        //获取段落集合
+        List<XWPFParagraph> paragraphs = document.getParagraphs();
+        for (XWPFParagraph paragraph : paragraphs) {
+            //判断此段落时候需要进行替换
+            String text = paragraph.getText();
+            if (checkText(text)) {
+                List<XWPFRun> runs = paragraph.getRuns();
+                for (XWPFRun run : runs) {
+                    //替换模板原来位置
+                    run.setText(changeValue(run.toString(), textMap), 0);
+                }
+            }
+        }
+    }
+
+    /**
+     * 替换表格中标记的数据 标记方式为 ${text}
+     * 这里有个奇怪的问题 输入${}符号的时候需要把输入法切换到中文
+     * ${}中间不能用数字,不能有下划线
+     *
+     * @param document      word对象
+     * @param tableTextList 需要替换的信息集合
+     */
+    public void changeTableText(XWPFDocument document, List<Map<String, String>> tableTextList) {
+        //获取表格对象集合
+        List<XWPFTable> tables = document.getTables();
+        for (int i = 0; i < tables.size(); i++) {
+            Map<String, String> textMap = tableTextList.get(i);
+            //只处理行数大于等于2的表格
+            XWPFTable table = tables.get(i);
+            if (table.getRows().size() > 1) {
+                //判断表格是需要替换还是需要插入，判断逻辑有$为替换，表格无$为插入
+                if (checkText(table.getText())) {
+                    List<XWPFTableRow> rows = table.getRows();
+                    //遍历表格,并替换模板
+                    eachTable(rows, textMap);
+                }
+            }
+        }
+    }
+
     /**
      * 判断文本中时候包含$
      *
