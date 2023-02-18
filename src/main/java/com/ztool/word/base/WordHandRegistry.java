@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Scope("singleton")
 public class WordHandRegistry implements ApplicationContextAware, InitializingBean {
 
-    private static final Map<String, WordDataHandlerAbstract> WORD_CMD_HANDLE_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, WordTableHandlerAbstract> WORD_CMD_HANDLE_MAP = new ConcurrentHashMap<>();
 
     private static final Map<String, WordBasicDataHandlerAbstract> WORD_BASIC_HANDLE_MAP = new ConcurrentHashMap<>();
 
@@ -31,9 +31,9 @@ public class WordHandRegistry implements ApplicationContextAware, InitializingBe
     @Override
     public void afterPropertiesSet() {
 
-        Map<String, WordDataHandlerAbstract> wordCmdHandleMap = context.getBeansOfType(WordDataHandlerAbstract.class);
-        for (Map.Entry<String, WordDataHandlerAbstract> handEntry : wordCmdHandleMap.entrySet()) {
-            WordDataHandlerAbstract handle = handEntry.getValue();
+        Map<String, WordTableHandlerAbstract> wordCmdHandleMap = context.getBeansOfType(WordTableHandlerAbstract.class);
+        for (Map.Entry<String, WordTableHandlerAbstract> handEntry : wordCmdHandleMap.entrySet()) {
+            WordTableHandlerAbstract handle = handEntry.getValue();
             List<String> cmdCodeList = handle.dataCode();
             if (CollectionUtil.isNotEmpty(cmdCodeList)) {
                 for (String cmdCode : cmdCodeList) {
@@ -57,7 +57,7 @@ public class WordHandRegistry implements ApplicationContextAware, InitializingBe
         this.context = applicationContext;
     }
 
-    public static WordDataHandlerAbstract getDataHandler(String code) {
+    public static WordTableHandlerAbstract getDataHandler(String code) {
         return WORD_CMD_HANDLE_MAP.get(code);
     }
 

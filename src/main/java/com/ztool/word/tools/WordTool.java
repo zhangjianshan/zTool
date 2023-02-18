@@ -244,7 +244,7 @@ public class WordTool {
      * @param document      word对象
      * @param tableTextList 需要替换的信息集合
      */
-    public void changeTableText(XWPFDocument document, List<Map<String, String>> tableTextList) {
+    public static void changeTableText(XWPFDocument document, List<Map<String, String>> tableTextList) {
         //获取表格对象集合
         List<XWPFTable> tables = document.getTables();
         for (int i = 0; i < tables.size(); i++) {
