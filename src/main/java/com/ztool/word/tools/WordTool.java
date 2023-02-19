@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.Units;
+import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -211,6 +212,55 @@ public class WordTool {
             return StringUtils.EMPTY;
         }
         return String.valueOf(obj);
+    }
+
+    /**
+     * 创建饼状
+     *
+     * @param document     文档
+     * @param xDataList    横坐标数据
+     * @param yDataList    纵坐标数据
+     * @param titleText    图表标题
+     * @param pieTitleText 系列提示标题
+     */
+    @SneakyThrows
+    public static void createPieChart(XWPFDocument document, List<String> xDataList,
+                                      List<Integer> yDataList, String titleText,
+                                      String pieTitleText) {
+        //1、创建表
+        XWPFChart chart = document.createChart(15 * Units.EMU_PER_CENTIMETER, 10 * Units.EMU_PER_CENTIMETER);
+        //2、图表相关设置
+        //图表标题
+        chart.setTitleText(titleText);
+        //图例是否覆盖标题
+        chart.setTitleOverlay(false);
+
+        //3、图例设置
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        // 图例位置:上下左右
+        legend.setPosition(LegendPosition.RIGHT);
+
+        //4、X轴(分类轴)相关设置:饼图中的图例显示
+        String[] xAxisData = xDataList.toArray(new String[0]);
+        // 设置分类数据
+        XDDFCategoryDataSource xAxisSource = XDDFDataSourcesFactory.fromArray(xAxisData);
+
+        //5、Y轴(值轴)相关设置:饼图中的圆形显示
+        Integer[] yAxisData = yDataList.toArray(new Integer[0]);
+        // 设置值数据
+        XDDFNumericalDataSource<Integer> yAxisSource = XDDFDataSourcesFactory.fromArray(yAxisData);
+
+        //6、创建饼图对象,饼状图不需要X,Y轴,只需要数据集即可
+        XDDFPieChartData pieChart = (XDDFPieChartData) chart.createData(ChartTypes.PIE, null, null);
+        pieChart.setVaryColors(true);
+        //7、加载饼图数据集
+        XDDFPieChartData.Series pieSeries = (XDDFPieChartData.Series) pieChart.addSeries(xAxisSource, yAxisSource);
+        //系列提示标题
+        pieSeries.setTitle(pieTitleText, null);
+        pieSeries.setShowLeaderLines(true);
+        //8、绘制饼图
+        chart.plot(pieChart);
+
     }
 
 
