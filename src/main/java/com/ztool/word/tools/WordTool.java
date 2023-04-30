@@ -377,11 +377,13 @@ public class WordTool {
         XSSFWorkbook workbook = chart.getWorkbook();
         XSSFSheet sheet = workbook.getSheetAt(0);
         XSSFRow row = sheet.getRow(0);
-        if (row == null)
+        if (row == null) {
             row = sheet.createRow(0);
+        }
         XSSFCell cell = row.getCell(column);
-        if (cell == null)
+        if (cell == null) {
             cell = row.createCell(column);
+        }
         cell.setCellValue(title);
         return new CellReference(sheet.getSheetName(), 0, column, true, true);
     }
