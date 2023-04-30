@@ -8,10 +8,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author zhangjianshan on 2023-04-30
@@ -24,10 +21,12 @@ public class CascadeSelectTool {
         areaList.put("魏国", CollectionUtil.newArrayList("曹操", "许褚", "典韦"));
         areaList.put("吴国", CollectionUtil.newArrayList("孙权", "黄盖", "周瑜"));
         areaList.put("关羽", CollectionUtil.newArrayList("关兴"));
-
+        areaList.put("关兴", CollectionUtil.newArrayList("关某"));
+        //下拉框区域
+        List<Integer> selectColList = CollectionUtil.newArrayList(0, 1, 2, 3);
         XSSFWorkbook book = new XSSFWorkbook();
         book.createSheet("下拉框模板");
-        setCascadeDropDownBox(book, "下拉框模板", "data", areaList, 0, 1);
+        setCascadeDropDownBox(book, "下拉框模板", "data", "势力", areaList, selectColList);
         SimpleSelectTool.writeFile(book);
     }
 
@@ -37,12 +36,16 @@ public class CascadeSelectTool {
      * @param wb              表格对象
      * @param typeName        要渲染的sheet名称
      * @param hiddenSheetName 数据字典sheet名称
+     * @param topName         一级下拉框名称
      * @param values          级联下拉数据
-     * @param fatherCol       父级下拉区域
-     * @param sonCol          子级下拉区域
+     * @param selectColList   下拉区域
      */
-    public static void setCascadeDropDownBox(XSSFWorkbook wb, String typeName, String hiddenSheetName, Map<String, List<String>> values,
-                                             Integer fatherCol, Integer sonCol) {
+    public static void setCascadeDropDownBox(XSSFWorkbook wb,
+                                             String typeName,
+                                             String hiddenSheetName,
+                                             String topName,
+                                             Map<String, List<String>> values,
+                                             List<Integer> selectColList) {
         //获取所有sheet页个数
         int sheetTotal = wb.getNumberOfSheets();
         //处理下拉数据
@@ -53,19 +56,23 @@ public class CascadeSelectTool {
                 hiddenSheet = wb.createSheet(hiddenSheetName);
                 sheetTotal++;
             }
+            int mainStart = 2;
+            int mainEnd = mainStart;
             // 获取数据起始行
             int startRowNum = hiddenSheet.getLastRowNum() + 1;
-            int endRowNum = startRowNum;
             Set<String> keySet = values.keySet();
             for (String key : keySet) {
-                XSSFRow fRow = hiddenSheet.createRow(endRowNum++);
+                XSSFRow fRow = hiddenSheet.createRow(startRowNum++);
                 fRow.createCell(0).setCellValue(key);
                 List<String> sons = values.get(key);
                 for (int i = 1; i <= sons.size(); i++) {
                     fRow.createCell(i).setCellValue(sons.get(i - 1));
                 }
+                if (Objects.equals(topName, key)) {
+                    mainEnd = sons.size();
+                }
                 // 添加名称管理器
-                String range = getRange(1, endRowNum, sons.size());
+                String range = getRange(1, startRowNum, sons.size());
                 Name name = wb.createName();
                 //key不可重复
                 name.setNameName(key);
@@ -77,20 +84,22 @@ public class CascadeSelectTool {
 
             // 设置父级下拉
             //获取新sheet页内容
-            String mainFormula = hiddenSheetName + "!$A$" + ++startRowNum + ":$A$" + endRowNum;
+            String mainFormula = hiddenSheetName + "!$A$" + mainStart + ":$A$" + (mainEnd + 1);
             XSSFSheet mainSheet = wb.getSheet(typeName);
-            // 设置下拉列表值绑定到主sheet页具体哪个单元格起作用
-            mainSheet.addValidationData(setDataValidation(wb, mainFormula, 1, 65535, fatherCol, fatherCol));
 
-            // 设置子级下拉
-            // 当前列为子级下拉框的内容受父级哪一列的影响
-            String indirectFormula = "INDIRECT($" + decimalToTwentyHex(fatherCol + 1) + "2)";
-            mainSheet.addValidationData(setDataValidation(wb, indirectFormula, 1, 65535, sonCol, sonCol));
-
-            // 设置子级下拉
-            // 当前列为子级下拉框的内容受父级哪一列的影响
-            String sonIndirectFormula = "INDIRECT($" + decimalToTwentyHex(sonCol+ 1) + "2)";
-            mainSheet.addValidationData(setDataValidation(wb, sonIndirectFormula, 1, 65535, 2, 2));
+            for (int i = 0; i < selectColList.size(); i++) {
+                Integer col = selectColList.get(i);
+                if (i == 0) {
+                    // 设置下拉列表值绑定到主sheet页具体哪个单元格起作用
+                    mainSheet.addValidationData(setDataValidation(wb, mainFormula, hiddenSheetName, 1, 65535, col, col));
+                } else {
+                    Integer fatherCol = selectColList.get(i - 1);
+                    // 设置子级下拉
+                    // 当前列为子级下拉框的内容受父级哪一列的影响
+                    String indirectFormula = "INDIRECT($" + decimalToTwentyHex(fatherCol + 1) + "2)";
+                    mainSheet.addValidationData(setDataValidation(wb, indirectFormula, hiddenSheetName, 1, 65535, col, col));
+                }
+            }
         }
     }
 
@@ -142,9 +151,9 @@ public class CascadeSelectTool {
      * @param endCol     终止列
      * @return 返回类型 DataValidation
      */
-    public static DataValidation setDataValidation(Workbook wb, String strFormula, int firstRow, int endRow, int firstCol, int endCol) {
+    public static DataValidation setDataValidation(Workbook wb, String strFormula, String hiddenSheetName, int firstRow, int endRow, int firstCol, int endCol) {
         CellRangeAddressList regions = new CellRangeAddressList(firstRow, endRow, firstCol, endCol);
-        DataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) wb.getSheet("data"));
+        DataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) wb.getSheet(hiddenSheetName));
         DataValidationConstraint formulaListConstraint = dvHelper.createFormulaListConstraint(strFormula);
         return dvHelper.createValidation(formulaListConstraint, regions);
     }
