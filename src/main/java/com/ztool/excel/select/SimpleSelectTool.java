@@ -1,13 +1,15 @@
 package com.ztool.excel.select;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,18 +20,6 @@ import java.util.List;
  */
 public class SimpleSelectTool {
 
-    public static void main(String[] args) {
-        Workbook book = new XSSFWorkbook();
-        XSSFSheet sheet = (XSSFSheet) book.createSheet("下拉框模板");
-        List<String> selectDateList = CollectionUtil.newArrayList("蜀国", "魏国", "吴国");
-        //基于数据有效性序列设置下拉(下拉字符有限制)
-        effectivenessSelectData(sheet, selectDateList, 0);
-
-        //基于sheet
-        String dataSheet = createHiddenSheet(book, "dataSheet", selectDateList);
-        sheetSelectData(sheet, dataSheet, 1);
-        writeFile(book);
-    }
 
     /**
      * 基于数据有效性序列设置下拉(字符数有限制)
