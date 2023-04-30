@@ -1,58 +1,97 @@
 package com.ztool.excel.select;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.*;
 
 /**
  * @author zhangjianshan on 2023-04-30
  */
 public class CascadeSelectTool {
 
+    private final XSSFWorkbook workbook;
+
+    private XSSFSheet mainSheet;
+
+    private Map<String, List<String>> areaList = new LinkedHashMap<>();
+
+    private String hiddenSheetName = "hidden";
+
+    private int firstRow = 1;
+
+    private String topName;
+
+    private List<Integer> selectColList;
+
+
+    public CascadeSelectTool(XSSFWorkbook book) {
+        this.workbook = book;
+    }
+
+    public CascadeSelectTool createSheet(String sheetName) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (Objects.nonNull(sheet)) {
+            this.mainSheet = (XSSFSheet) sheet;
+        } else {
+            this.mainSheet = (XSSFSheet) workbook.createSheet(sheetName);
+        }
+        return this;
+    }
+
+    public CascadeSelectTool createSelectDateList(Map<String, List<String>> areaList) {
+        this.areaList = areaList;
+        return this;
+    }
+
+    public CascadeSelectTool createTopName(String topName) {
+        this.topName = topName;
+        return this;
+    }
+
+    public CascadeSelectTool createSelectColList(List<Integer> selectColList) {
+        this.selectColList = selectColList;
+        return this;
+    }
+
+    public CascadeSelectTool createHiddenName(String hiddenSheetName) {
+        this.hiddenSheetName = hiddenSheetName;
+        return this;
+    }
+
+    public CascadeSelectTool createFirstRow(int firstRow) {
+        this.firstRow = firstRow;
+        return this;
+    }
 
     /**
      * 设置二级级联下拉框数据
-     *
-     * @param wb              表格对象
-     * @param typeName        要渲染的sheet名称
-     * @param hiddenSheetName 数据字典sheet名称
-     * @param topName         一级下拉框名称
-     * @param values          级联下拉数据
-     * @param selectColList   下拉区域
      */
-    public static void setCascadeDropDownBox(XSSFWorkbook wb,
-                                             String typeName,
-                                             String hiddenSheetName,
-                                             String topName,
-                                             Map<String, List<String>> values,
-                                             List<Integer> selectColList) {
+    public CascadeSelectTool setCascadeDropDownBox() {
         //获取所有sheet页个数
-        int sheetTotal = wb.getNumberOfSheets();
+        int sheetTotal = workbook.getNumberOfSheets();
         //处理下拉数据
-        if (values != null && values.size() != 0) {
+        if (areaList != null && areaList.size() != 0) {
             //新建一个sheet页
-            XSSFSheet hiddenSheet = wb.getSheet(hiddenSheetName);
+            XSSFSheet hiddenSheet = workbook.getSheet(hiddenSheetName);
             if (hiddenSheet == null) {
-                hiddenSheet = wb.createSheet(hiddenSheetName);
+                hiddenSheet = workbook.createSheet(hiddenSheetName);
                 sheetTotal++;
             }
             int mainStart = 2;
             int mainEnd = mainStart;
             // 获取数据起始行
             int startRowNum = hiddenSheet.getLastRowNum() + 1;
-            Set<String> keySet = values.keySet();
+            Set<String> keySet = areaList.keySet();
             for (String key : keySet) {
                 XSSFRow fRow = hiddenSheet.createRow(startRowNum++);
                 fRow.createCell(0).setCellValue(key);
-                List<String> sons = values.get(key);
+                List<String> sons = areaList.get(key);
                 for (int i = 1; i <= sons.size(); i++) {
                     fRow.createCell(i).setCellValue(sons.get(i - 1));
                 }
@@ -61,34 +100,37 @@ public class CascadeSelectTool {
                 }
                 // 添加名称管理器
                 String range = getRange(1, startRowNum, sons.size());
-                Name name = wb.createName();
-                //key不可重复
-                name.setNameName(key);
-                String formula = hiddenSheetName + "!" + range;
-                name.setRefersToFormula(formula);
+                Name name = workbook.getName(key);
+                if (Objects.isNull(name)) {
+                    name = workbook.createName();
+                    //key不可重复
+                    name.setNameName(key);
+                    String formula = hiddenSheetName + "!" + range;
+                    name.setRefersToFormula(formula);
+                }
             }
             //将数据字典sheet页隐藏掉
-            wb.setSheetHidden(sheetTotal - 1, true);
+            workbook.setSheetHidden(sheetTotal - 1, true);
 
             // 设置父级下拉
             //获取新sheet页内容
             String mainFormula = hiddenSheetName + "!$A$" + mainStart + ":$A$" + (mainEnd + 1);
-            XSSFSheet mainSheet = wb.getSheet(typeName);
 
             for (int i = 0; i < selectColList.size(); i++) {
                 Integer col = selectColList.get(i);
                 if (i == 0) {
                     // 设置下拉列表值绑定到主sheet页具体哪个单元格起作用
-                    mainSheet.addValidationData(setDataValidation(wb, mainFormula, hiddenSheetName, 1, 65535, col, col));
+                    mainSheet.addValidationData(setDataValidation(mainFormula, firstRow, col, col));
                 } else {
                     Integer fatherCol = selectColList.get(i - 1);
                     // 设置子级下拉
                     // 当前列为子级下拉框的内容受父级哪一列的影响
-                    String indirectFormula = "INDIRECT($" + decimalToTwentyHex(fatherCol + 1) + "2)";
-                    mainSheet.addValidationData(setDataValidation(wb, indirectFormula, hiddenSheetName, 1, 65535, col, col));
+                    String indirectFormula = "INDIRECT($" + decimalToTwentyHex(fatherCol + 1) + "" + (firstRow + 1) + ")";
+                    mainSheet.addValidationData(setDataValidation(indirectFormula, firstRow, col, col));
                 }
             }
         }
+        return this;
     }
 
     /**
@@ -99,7 +141,7 @@ public class CascadeSelectTool {
      * @param colCount 一共多少列
      * @return 如果给入参 1,1,10. 表示从B1-K1。最终返回 $B$1:$K$1
      */
-    public static String getRange(int offset, int rowId, int colCount) {
+    private String getRange(int offset, int rowId, int colCount) {
         char start = (char) ('A' + offset);
         if (colCount <= 25) {
             char end = (char) (start + colCount - 1);
@@ -131,18 +173,15 @@ public class CascadeSelectTool {
     /**
      * 返回类型 DataValidation
      *
-     * @param wb              表格对象
-     * @param strFormula      formula
-     * @param hiddenSheetName 隐藏数据列
-     * @param firstRow        起始行
-     * @param endRow          终止行
-     * @param firstCol        起始列
-     * @param endCol          终止列
+     * @param strFormula formula
+     * @param firstRow   起始行
+     * @param firstCol   起始列
+     * @param endCol     终止列
      * @return 返回类型 DataValidation
      */
-    public static DataValidation setDataValidation(Workbook wb, String strFormula, String hiddenSheetName, int firstRow, int endRow, int firstCol, int endCol) {
-        CellRangeAddressList regions = new CellRangeAddressList(firstRow, endRow, firstCol, endCol);
-        DataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) wb.getSheet(hiddenSheetName));
+    private DataValidation setDataValidation(String strFormula, int firstRow, int firstCol, int endCol) {
+        CellRangeAddressList regions = new CellRangeAddressList(firstRow, 65535, firstCol, endCol);
+        DataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) workbook.getSheet(hiddenSheetName));
         DataValidationConstraint formulaListConstraint = dvHelper.createFormulaListConstraint(strFormula);
         return dvHelper.createValidation(formulaListConstraint, regions);
     }
@@ -150,7 +189,7 @@ public class CascadeSelectTool {
     /**
      * 十进制转二十六进制
      */
-    public static String decimalToTwentyHex(int decimalNum) {
+    private String decimalToTwentyHex(int decimalNum) {
         StringBuilder result = new StringBuilder();
         while (decimalNum > 0) {
             int remainder = decimalNum % 26;
@@ -159,5 +198,26 @@ public class CascadeSelectTool {
             decimalNum = decimalNum / 26;
         }
         return result.reverse().toString();
+    }
+
+    public void writeFile() {
+        writeFile(workbook);
+    }
+
+
+    public static void writeFile(Workbook book) {
+        try {
+            String storeName = System.currentTimeMillis() + ".xlsx";
+            String folder = "template/" + cn.hutool.core.date.DateUtil.format(DateUtil.date(), "yyMMdd") + "/";
+            String attachmentFolder = "E://" + File.separator;
+            String address = folder + storeName;
+            FileUtil.mkdir(attachmentFolder + folder);
+            FileOutputStream fileOut = new FileOutputStream(attachmentFolder + address);
+            book.write(fileOut);
+            fileOut.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

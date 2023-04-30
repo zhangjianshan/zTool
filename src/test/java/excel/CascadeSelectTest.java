@@ -2,7 +2,6 @@ package excel;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.ztool.excel.select.CascadeSelectTool;
-import com.ztool.excel.select.SimpleSelectTool;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.LinkedHashMap;
@@ -14,19 +13,29 @@ import java.util.Map;
  */
 public class CascadeSelectTest {
     public static void main(String[] args) {
-        //¼¶ÁªÏÂ
+        //çº§è”ä¸‹
         Map<String, List<String>> areaList = new LinkedHashMap<>();
-        areaList.put("ÊÆÁ¦", CollectionUtil.newArrayList("Êñ¹ú", "Îº¹ú", "Îâ¹ú"));
-        areaList.put("Êñ¹ú", CollectionUtil.newArrayList("Áõ±¸", "¹ØÓğ", "ÕÅ·É"));
-        areaList.put("Îº¹ú", CollectionUtil.newArrayList("²Ü²Ù", "ĞíñÒ", "µäÎ¤"));
-        areaList.put("Îâ¹ú", CollectionUtil.newArrayList("ËïÈ¨", "»Æ¸Ç", "ÖÜè¤"));
-        areaList.put("¹ØÓğ", CollectionUtil.newArrayList("¹ØĞË"));
-        areaList.put("¹ØĞË", CollectionUtil.newArrayList("¹ØÄ³"));
-        //ÏÂÀ­¿òÇøÓò
-        List<Integer> selectColList = CollectionUtil.newArrayList(0, 1, 2, 3);
+        areaList.put("åŠ¿åŠ›", CollectionUtil.newArrayList("èœ€å›½", "é­å›½", "å´å›½"));
+        areaList.put("èœ€å›½", CollectionUtil.newArrayList("åˆ˜å¤‡", "å…³ç¾½", "å¼ é£"));
+        areaList.put("é­å›½", CollectionUtil.newArrayList("æ›¹æ“", "è®¸è¤š", "å…¸éŸ¦"));
+        areaList.put("å´å›½", CollectionUtil.newArrayList("å­™æƒ", "é»„ç›–", "å‘¨ç‘œ"));
+        areaList.put("å…³ç¾½", CollectionUtil.newArrayList("å…³å…´"));
+        areaList.put("å…³å…´", CollectionUtil.newArrayList("å…³æŸ"));
+        //ä¸‹æ‹‰æ¡†åŒºåŸŸ
+        List<Integer> selectColList = CollectionUtil.newArrayList(0, 1, 2);
+        List<Integer> selectElseColList = CollectionUtil.newArrayList(4, 5, 6, 7);
         XSSFWorkbook book = new XSSFWorkbook();
-        book.createSheet("ÏÂÀ­¿òÄ£°å");
-        CascadeSelectTool.setCascadeDropDownBox(book, "ÏÂÀ­¿òÄ£°å", "data", "ÊÆÁ¦", areaList, selectColList);
-        SimpleSelectTool.writeFile(book);
+        new CascadeSelectTool(book)
+                .createSheet("çº§è”ä¸‹æ‹‰æ¡†")
+                .createSelectDateList(areaList)
+                .createTopName("åŠ¿åŠ›")
+                .createSelectColList(selectColList)
+                .createFirstRow(0)
+                .setCascadeDropDownBox()
+                .createSelectColList(selectElseColList)
+                .createFirstRow(1)
+                .setCascadeDropDownBox()
+                .writeFile();
+
     }
 }

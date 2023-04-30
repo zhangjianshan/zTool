@@ -3,7 +3,6 @@ package excel;
 import cn.hutool.core.collection.CollectionUtil;
 import com.ztool.excel.select.SimpleSelectTool;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.List;
@@ -14,14 +13,19 @@ import java.util.List;
 public class SimpleSelectTest {
     public static void main(String[] args) {
         Workbook book = new XSSFWorkbook();
-        XSSFSheet sheet = (XSSFSheet) book.createSheet("ÏÂÀ­¿òÄ£°å");
-        List<String> selectDateList = CollectionUtil.newArrayList("Êñ¹ú", "Îº¹ú", "Îâ¹ú");
-        //»ùÓÚÊı¾İÓĞĞ§ĞÔĞòÁĞÉèÖÃÏÂÀ­(ÏÂÀ­×Ö·ûÓĞÏŞÖÆ)
-        SimpleSelectTool.effectivenessSelectData(sheet, selectDateList, 0);
+        List<String> selectDataList = CollectionUtil.newArrayList("èœ€å›½", "é­å›½", "å´å›½");
+        List<String> selectDataElseList = CollectionUtil.newArrayList("ä¸­å›½", "ä¿„ç½—æ–¯", "æœé²œ");
 
-        //»ùÓÚsheet
-        String dataSheet = SimpleSelectTool.createHiddenSheet(book, "dataSheet", selectDateList);
-        SimpleSelectTool.sheetSelectData(sheet, dataSheet, 1);
-        SimpleSelectTool.writeFile(book);
+        new SimpleSelectTool(book)
+                .createSheet("ä¸‹æ‹‰æ¡†æ¨¡æ¿")
+                .createSelectDateList(selectDataList)
+                .effectivenessSelectData(0)
+                .createSelectDateList(selectDataElseList)
+                .createFirstRow(0)
+                .sheetSelectData(1)
+                .createSheet("å…¶ä»–æ¨¡æ¿")
+                .createHiddenName("è®¾ç½®å…¶ä»–éšè—é¡µ")
+                .sheetSelectData(0)
+                .writeFile();
     }
 }
