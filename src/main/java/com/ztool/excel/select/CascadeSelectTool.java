@@ -54,7 +54,7 @@ public class CascadeSelectTool {
         if (Objects.nonNull(sheet)) {
             this.mainSheet = (XSSFSheet) sheet;
         } else {
-            this.mainSheet = (XSSFSheet) workbook.createSheet(sheetName);
+            this.mainSheet = workbook.createSheet(sheetName);
         }
         return this;
     }
