@@ -143,12 +143,13 @@ public class CascadeSelectTool {
     /**
      * 返回类型 DataValidation
      *
-     * @param wb         表格对象
-     * @param strFormula formula
-     * @param firstRow   起始行
-     * @param endRow     终止行
-     * @param firstCol   起始列
-     * @param endCol     终止列
+     * @param wb              表格对象
+     * @param strFormula      formula
+     * @param hiddenSheetName 隐藏数据列
+     * @param firstRow        起始行
+     * @param endRow          终止行
+     * @param firstCol        起始列
+     * @param endCol          终止列
      * @return 返回类型 DataValidation
      */
     public static DataValidation setDataValidation(Workbook wb, String strFormula, String hiddenSheetName, int firstRow, int endRow, int firstCol, int endCol) {
