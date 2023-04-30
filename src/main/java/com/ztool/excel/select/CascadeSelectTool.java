@@ -19,14 +19,29 @@ public class CascadeSelectTool {
 
     private XSSFSheet mainSheet;
 
+    /**
+     * 数据
+     */
     private Map<String, List<String>> areaList = new LinkedHashMap<>();
 
+    /**
+     * 隐藏页名称
+     */
     private String hiddenSheetName = "hidden";
 
+    /**
+     * 第一行
+     */
     private int firstRow = 1;
 
+    /**
+     * 一级名称
+     */
     private String topName;
 
+    /**
+     * 级联集合
+     */
     private List<Integer> selectColList;
 
 

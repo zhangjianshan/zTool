@@ -27,10 +27,19 @@ public class SimpleSelectTool {
 
     private XSSFSheet sheet;
 
+    /**
+     * 第一行
+     */
     private int firstRow = 1;
 
+    /**
+     * 数据
+     */
     private List<String> selectDateList;
 
+    /**
+     * 隐藏页
+     */
     private String hiddenSheetName = "hidden";
 
     public SimpleSelectTool(Workbook book) {
