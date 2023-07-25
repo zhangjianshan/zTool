@@ -18,8 +18,10 @@ public class SimpleSelectTest {
 
         new SimpleSelectTool(book)
                 .createSheet("下拉框模板")
+                //基于数据有效性序列设置下拉(字符数有限制)
                 .createSelectDateList(selectDataList)
                 .effectivenessSelectData(0)
+                //基于隐藏表格
                 .createSelectDateList(selectDataElseList)
                 .createFirstRow(0)
                 .sheetSelectData(1)
