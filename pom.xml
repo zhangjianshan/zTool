@@ -73,6 +73,11 @@
             <artifactId>netty-all</artifactId>
             <version>4.0.24.Final</version>
         </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>3.3.0</version>
+        </dependency>
     </dependencies>
 
 </project>
